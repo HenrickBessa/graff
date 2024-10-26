@@ -1,0 +1,25 @@
+# Ambientes virtuais
+venv/
+.env/
+
+# Arquivos de dependências instaladas
+*.egg-info/
+__pycache__/
+*.pyc
+
+# Arquivos de configuração do sistema operacional
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Configurações e arquivos temporários de IDEs
+.vscode/
+.idea/
+
+# Arquivos de configuração do Jupyter (se você usar notebooks no projeto)
+.ipynb_checkpoints/
+
+# Dependências instaladas no projeto (caso existam)
+env/
