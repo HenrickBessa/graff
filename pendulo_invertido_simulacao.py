@@ -1,11 +1,13 @@
+import matplotlib
+matplotlib.use('Agg')
+
 import numpy as np
 import skfuzzy as fuzz
 import skfuzzy.control as ctrl
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt 
 
 class PenduloInvertido:
     def __init__(self):
-
         self.angulo = ctrl.Antecedent(np.arange(-180, 181, 1), 'angulo')
         self.velocidade_angular = ctrl.Antecedent(np.arange(-50, 51, 1), 'velocidade_angular')
 
@@ -51,7 +53,6 @@ class PenduloInvertido:
 def simular_pendulo(tempo_total, intervalo):
     pendulo_simulacao = PenduloInvertido()
 
-  
     angulo = 10
     velocidade_angular = 0 
     tempos = []
@@ -61,12 +62,10 @@ def simular_pendulo(tempo_total, intervalo):
     for t in np.arange(0, tempo_total, intervalo):
         empurro = pendulo_simulacao.controlar_pendulo(angulo, velocidade_angular)
 
-  
         aceleração = empurro
         velocidade_angular += aceleração * intervalo
         angulo += velocidade_angular * intervalo
 
-      
         tempos.append(t)
         angulos.append(angulo)
         velocidades.append(velocidade_angular)
@@ -75,11 +74,10 @@ def simular_pendulo(tempo_total, intervalo):
 
     return tempos, angulos, velocidades
 
-
 tempos, angulos, velocidades = simular_pendulo(10, 0.1)
 
-
 plt.figure(figsize=(12, 6))
+
 plt.subplot(2, 1, 1)
 plt.plot(tempos, angulos, label='Ângulo do Pêndulo', color='b')
 plt.title('Simulação do Pêndulo Invertido')
@@ -95,4 +93,7 @@ plt.grid()
 plt.legend()
 
 plt.tight_layout()
-plt.show()
+
+plt.savefig('grafico_pendulo.png')  
+
+plt.show() 
