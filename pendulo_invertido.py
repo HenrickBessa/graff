@@ -3,7 +3,6 @@ import skfuzzy as fuzz
 from skfuzzy import control as ctrl
 import matplotlib.pyplot as plt
 
-
 def criar_sistema_fuzzy():
     angulo = ctrl.Antecedent(np.arange(-10, 11, 1), 'angulo')
     velocidade_angular = ctrl.Antecedent(np.arange(-5, 6, 1), 'velocidade_angular')
