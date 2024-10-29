@@ -99,7 +99,6 @@ def simular_pendulo(tempo_total, dt):
 
 tempos, angulos, velocidades = simular_pendulo(10, 0.1)
 
-
 plt.figure(figsize=(10, 5))
 plt.subplot(2, 1, 1)
 plt.plot(tempos, angulos, label='Ângulo do Pêndulo')
@@ -116,7 +115,6 @@ plt.legend()
 plt.tight_layout()
 plt.savefig('simulacao_pendulo.png')
 plt.show()
-
 
 plot_memberships(ctrl.Antecedent(np.arange(-10, 11, 1), 'angulo'),
                  ctrl.Antecedent(np.arange(-5, 6, 1), 'velocidade_angular'),
