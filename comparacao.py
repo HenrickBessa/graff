@@ -1,68 +1,46 @@
 import numpy as np
-import matplotlib.pyplot as plt
-from pendulo_invertido_fuzzy import PenduloInvertido
-from pendulo_invertido_genetic import algoritmo_genetico
-from pendulo_invertido import criar_sistema_fuzzy
-from skfuzzy import control as ctrl
+from neuro_fuzzy import SistemaNeuroFuzzy
+from sklearn.metrics import mean_squared_error
 
-angulos = np.linspace(-0.15, 0.15, 10)
-velocidades = np.linspace(-0.15, 0.15, 10)
+def gerar_dados_simulados(num_samples):
+    angulos = np.random.uniform(-10, 10, num_samples)
+    velocidades = np.random.uniform(-5, 5, num_samples)
+    empurros = angulos * 0.5 + velocidades * 1.5 + np.random.normal(0, 1, num_samples)
+    return np.column_stack((angulos, velocidades, empurros))
 
-pendulo_fuzzy = PenduloInvertido()
-resultados_fuzzy = []
-for angulo in angulos:
-    for velocidade in velocidades:
-        empurro = pendulo_fuzzy.simular(angulo, velocidade)
-        resultados_fuzzy.append((angulo, velocidade, empurro))
+def comparar_sistemas(sistema_fuzzy, sistema_neuro_fuzzy, angulos, velocidades):
+    mse_fuzzy = []
+    mse_neuro_fuzzy = []
 
-melhores_regras_genetico = algoritmo_genetico(50, 20, 0.1, angulos, velocidades)
-resultados_genetico = []
-for angulo in angulos:
-    for velocidade in velocidades:
-        empurro = pendulo_fuzzy.simular(angulo, velocidade)
-        resultados_genetico.append((angulo, velocidade, empurro))
+    for angulo in angulos:
+        for velocidade in velocidades:
+            empurro_fuzzy = sistema_fuzzy.simular(angulo, velocidade)
+            empurro_neuro_fuzzy = sistema_neuro_fuzzy.prever([angulo], [velocidade])[0]
 
-pendulo_ctrl = criar_sistema_fuzzy()
-simulador_fuzzy = ctrl.ControlSystemSimulation(pendulo_ctrl)
-resultados_sistema_fuzzy = []
-for angulo in np.arange(-10, 11, 1):
-    for velocidade in np.arange(-5, 6, 1):
-        simulador_fuzzy.input['angulo'] = angulo
-        simulador_fuzzy.input['velocidade_angular'] = velocidade
-        simulador_fuzzy.compute()
-        empurro = simulador_fuzzy.output['empurrao_carro']
-        resultados_sistema_fuzzy.append((angulo, velocidade, empurro))
+            if empurro_fuzzy is not None and empurro_neuro_fuzzy is not None:
+                mse_fuzzy.append(empurro_fuzzy)
+                mse_neuro_fuzzy.append(empurro_neuro_fuzzy)
 
-resultados_fuzzy = np.array(resultados_fuzzy)
-resultados_genetico = np.array(resultados_genetico)
-resultados_sistema_fuzzy = np.array(resultados_sistema_fuzzy)
+    if len(mse_fuzzy) > 0 and len(mse_neuro_fuzzy) > 0:
+        mse_value = mean_squared_error(mse_fuzzy, mse_neuro_fuzzy)
+        return mse_value
+    else:
+        return None
 
-media_fuzzy = np.mean(resultados_fuzzy[:, 2])
-media_genetico = np.mean(resultados_genetico[:, 2])
-media_sistema_fuzzy = np.mean(resultados_sistema_fuzzy[:, 2])
+if __name__ == "__main__":
+    sistema_neuro_fuzzy = SistemaNeuroFuzzy()
 
-desvio_fuzzy = np.std(resultados_fuzzy[:, 2])
-desvio_genetico = np.std(resultados_genetico[:, 2])
-desvio_sistema_fuzzy = np.std(resultados_sistema_fuzzy[:, 2])
+    dados = gerar_dados_simulados(1000)
+    num_train = int(0.8 * len(dados))
+    dados_treino = dados[:num_train]
 
-print(f"Média Fuzzy: {media_fuzzy:.4f}, Desvio Fuzzy: {desvio_fuzzy:.4f}")
-print(f"Média Genético: {media_genetico:.4f}, Desvio Genético: {desvio_genetico:.4f}")
-print(f"Média Sistema Fuzzy: {media_sistema_fuzzy:.4f}, Desvio Sistema Fuzzy: {desvio_sistema_fuzzy:.4f}")
+    sistema_neuro_fuzzy.treinar(dados_treino)
 
-labels = ['Fuzzy', 'Genético', 'Sistema Fuzzy']
-medias = [media_fuzzy, media_genetico, media_sistema_fuzzy]
-desvios = [desvio_fuzzy, desvio_genetico, desvio_sistema_fuzzy]
+    angulos = np.linspace(-10, 10, 20)
+    velocidades = np.linspace(-5, 5, 20)
+    mse = comparar_sistemas(sistema_neuro_fuzzy, sistema_neuro_fuzzy, angulos, velocidades)
 
-x = np.arange(len(labels))
-largura = 0.35
-
-fig, ax = plt.subplots()
-barras1 = ax.bar(x - largura/2, medias, largura, label='Média', yerr=desvios, capsize=5)
-ax.set_ylabel('Valor')
-ax.set_title('Comparação das Médias e Desvios Padrão dos Empurrões')
-ax.set_xticks(x)
-ax.set_xticklabels(labels)
-ax.legend()
-
-plt.tight_layout()
-plt.show()
+    if mse is not None:
+        print("MSE entre Fuzzy e Neuro-Fuzzy:", mse)
+    else:
+        print("Não foram feitas previsões válidas para calcular o MSE.")
